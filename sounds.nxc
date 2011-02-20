@@ -5,6 +5,8 @@ setFreqs should be called from main. It defines the frequencies of
 notes. These can the be sounded using the play_note helper.
  */
 
+#define POLYPHONY_NOTE_LENGTH	40
+
 int freqs[];
 
 sub setFreqs()
@@ -38,14 +40,34 @@ sub setFreqs()
   }
 }
 
-sub play_note(int note, int duration)
+inline void play_note(int note, int duration)
 {
-  // interface fot tasks to play individual notes
+  // interface for tasks to play individual notes
   PlayTone(freqs[note], duration);
   Wait(duration);
 }
 
-sub squeal()
+safecall void play_notes(int notes[], int duration)
+{
+  // emulates polyphony
+  // allows the brick to play an array of notes simultaneously
+  int note_count = ArrayLen(notes);
+  long start_time = CurrentTick();
+  long end_time = start_time + duration;
+  long time = 0;
+  int counter = 0;
+  if(ArrayLen(notes) == 0){
+    Wait(duration);
+  } else{
+    while(time < end_time){
+      time = CurrentTick();  
+      play_note(notes[counter % note_count], POLYPHONY_NOTE_LENGTH);
+      counter++;
+    }
+  }
+}
+
+safecall void squeal()
 {
   // makes a scared noise
   int duration;

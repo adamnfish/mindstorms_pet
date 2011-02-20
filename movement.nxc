@@ -10,12 +10,12 @@ movements for re-usable behaviours.
 #define MOTOR_L		OUT_C
 #define MOTOR_R		OUT_B
 
-sub stop_motors()
+inline void stop_motors()
 {
   Off(MOTORS);
 }
 
-sub start_movement(int power)
+safecall void start_movement(int power)
 {
   if(power > 0){
     OnFwdReg(MOTORS, power, OUT_REGMODE_SYNC);
@@ -24,7 +24,7 @@ sub start_movement(int power)
   }  
 }
 
-sub move_straight(int power, int duration, bool coast=true)
+safecall void move_straight(int power, int duration, bool coast=true)
 {
   start_movement(power);
   Wait(duration);
@@ -35,7 +35,7 @@ sub move_straight(int power, int duration, bool coast=true)
   }
 }
 
-sub turn(int degrees)
+safecall void turn(int degrees)
 {
   // turn the robot by some number of degrees
   float motor_angle;
@@ -53,7 +53,7 @@ sub turn(int degrees)
   }
 }
 
-sub shake(int count)
+safecall void shake(int count)
 {
   // shakes from side to side
   int shake_time = 150;

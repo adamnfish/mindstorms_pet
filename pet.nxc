@@ -117,6 +117,8 @@ task explore()
 
 task test_sensors()
 {
+  // displays sensor readings on the screen every second
+  // useful for debugging
   while(true){
     ClearScreen();
     NumOut(5, LCD_LINE1, TOUCH);
@@ -125,6 +127,16 @@ task test_sensors()
     NumOut(5, LCD_LINE4, SensorUS(IN_4));
     Wait(1000);
   }
+}
+
+task test_play_notes()
+{
+  int notes1[] = {10, 14, 17, 5};
+  int notes2[] = {3, 7, 10, 15};
+  int notes3[];
+  play_notes(notes1, 2000);
+  play_notes(notes2, 2000);
+  play_notes(notes3, 1000);
 }
 
 task main()
