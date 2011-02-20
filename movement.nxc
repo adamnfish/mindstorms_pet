@@ -1,0 +1,47 @@
+/*
+Subroutines to control the pet's movements.
+
+Contains underlying movement subs as well as specific sets of
+movements for re-usable behaviours.
+ */
+
+// motors
+#define MOTORS		OUT_BC
+#define MOTOR_L		OUT_B
+#define MOTOR_R		OUT_C
+
+sub move_straight(int power, int duration, bool coast=true)
+{
+  if(power > 0){
+    OnFwd(MOTORS, power);
+  } else{
+    OnRev(MOTORS, -power);
+  }
+  Wait(duration);
+  if(coast){
+    Coast(MOTORS);
+  } else{
+    Off(MOTORS);
+  }
+}
+
+sub shake(int count)
+{
+  // shakes from side to side
+  int shake_time = 150;
+
+  OnFwd(MOTOR_L, 75);
+  Wait(shake_time / 2);
+  for(int i=0; i<count; i++){
+    OnRev(MOTOR_L, 75);
+    OnFwd(MOTOR_R, 75);
+    Wait(shake_time);
+    OnFwd(MOTOR_L, 75);
+    OnRev(MOTOR_R, 75);
+    Wait(shake_time);
+  }
+  Off(MOTOR_R);
+  OnRev(MOTOR_L, 75);
+  Wait(shake_time);
+  Off(MOTOR_L);
+}

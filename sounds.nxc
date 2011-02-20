@@ -1,0 +1,61 @@
+/*
+Subroutines to control the brick making sounds.
+
+setFreqs should be called from main. It defines the frequencies of
+notes. These can the be sounded using the play_note helper.
+ */
+
+int freqs[];
+
+sub setFreqs()
+{
+  int multiplier_pow;
+  int multiplier;
+
+  ArrayInit(freqs, 0, 60);
+  freqs[0] = 220; // A3
+  freqs[1] = 233; // A#3
+  freqs[2] = 247; // B3
+  freqs[3] = 262; // C4
+  freqs[4] = 277; // C#4
+  freqs[5] = 294; // D4
+  freqs[6] = 311; // D#4
+  freqs[7] = 330; // E4
+  freqs[8] = 349; // F4
+  freqs[9] = 370; // F#4
+  freqs[10] = 392; // G4
+  freqs[11] = 415; // G#4
+
+  for(int i=12; i<60; i++){
+    // automatically set the rest of the freqs
+    multiplier_pow = (i - 12) / 12;
+    multiplier = 2;
+    while(multiplier_pow > 0){
+      multiplier *= 2;
+      multiplier_pow--;
+    }
+    freqs[i] = freqs[i % 12] * multiplier;
+  }
+}
+
+sub play_note(int note, int duration)
+{
+  // interface fot tasks to play individual notes
+  PlayTone(freqs[note], duration);
+  Wait(duration);
+}
+
+sub squeal()
+{
+  // makes a scared noise
+  int duration;
+  int note_jump = 20;
+  int note = Random(note_jump);
+
+  while(note < 40){
+    duration = Random(50) + 70;
+    play_note(note, duration);
+    note = Random(note_jump) + note + 1;
+  }
+}
+ 

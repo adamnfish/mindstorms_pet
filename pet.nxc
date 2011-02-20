@@ -1,0 +1,72 @@
+#include "sounds.nxc"
+#include "movement.nxc"
+
+// sensors
+#define MIC		SENSOR_2
+
+mutex moveMutex;
+mutex soundMutex;
+
+task startled()
+{
+  // pet is shocked by a loud noise
+  int fright_threshold = 90;
+
+  while(true){
+    // when a loud noise occurs
+    until(MIC > fright_threshold);
+    // grab the sound and motor controls
+    Acquire(moveMutex);
+    Acquire(soundMutex);
+    // pause briefly for the noise to finish (reaction time)
+    Wait(40);
+    // back away
+    move_straight(-100, 100);
+    Wait(120);
+    // shake and squeal
+    shake(Random(3) + 1);
+    squeal();
+    // pet remains stunned briefly
+    Wait(300);
+    Release(soundMutex);
+    Release(moveMutex);
+  }
+}
+
+task sing()
+{
+  // pet will hum to itself
+  int duration;
+  int count = 0;
+
+  while(true){
+    Acquire(soundMutex);
+    duration = Random(50) + 150;
+    // PlayTone(freqs[Random(25)], duration);
+    play_note(Random(25), duration);
+    Wait(Random(50));
+    Release(soundMutex);
+    if(count > 3 && Random(5) < 1){
+      Wait(Random(10000) + 4000);
+      count = 0;
+    } else{
+      count++;
+    }
+  }
+}
+
+task explore()
+{
+  // pet will wander around avoiding obstacles
+}
+
+task main()
+{
+  // assign the sensors
+  SetSensorSound(IN_2);
+  // setup the sounds
+  setFreqs();
+  // start the tasks
+  Precedes(startled, sing);
+}
+
