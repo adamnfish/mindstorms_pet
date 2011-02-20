@@ -7,21 +7,49 @@ movements for re-usable behaviours.
 
 // motors
 #define MOTORS		OUT_BC
-#define MOTOR_L		OUT_B
-#define MOTOR_R		OUT_C
+#define MOTOR_L		OUT_C
+#define MOTOR_R		OUT_B
+
+sub stop_motors()
+{
+  Off(MOTORS);
+}
+
+sub start_movement(int power)
+{
+  if(power > 0){
+    OnFwdReg(MOTORS, power, OUT_REGMODE_SYNC);
+  } else{
+    OnRevReg(MOTORS, -power, OUT_REGMODE_SYNC);
+  }  
+}
 
 sub move_straight(int power, int duration, bool coast=true)
 {
-  if(power > 0){
-    OnFwd(MOTORS, power);
-  } else{
-    OnRev(MOTORS, -power);
-  }
+  start_movement(power);
   Wait(duration);
   if(coast){
     Coast(MOTORS);
   } else{
-    Off(MOTORS);
+    stop_motors();
+  }
+}
+
+sub turn(int degrees)
+{
+  // turn the robot by some number of degrees
+  float motor_angle;
+
+  stop_motors();
+  // normalise degrees to motor spin angle
+  motor_angle = degrees * 6.15;
+  degrees = motor_angle;
+  if(degrees > 0){
+    // turn right
+    RotateMotorEx(MOTORS, 70, degrees, 100, true, true);
+  } else{
+    // turn left
+    RotateMotorEx(MOTORS, 70, degrees, -100, true, true);
   }
 }
 

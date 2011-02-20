@@ -2,34 +2,45 @@
 #include "movement.nxc"
 
 // sensors
+#define TOUCH		SENSOR_1
 #define MIC		SENSOR_2
+#define LAMP		SENSOR_3
+#define ULTRASOUND	SENSOR_4
+
+int EXPLORING = false;
 
 mutex moveMutex;
 mutex soundMutex;
 
-task startled()
+task startle()
 {
   // pet is shocked by a loud noise
-  int fright_threshold = 90;
-
+  int fright_threshold = 98;
+  // won't be scared when the program starts
+  Wait(1000);
   while(true){
     // when a loud noise occurs
     until(MIC > fright_threshold);
-    // grab the sound and motor controls
-    Acquire(moveMutex);
-    Acquire(soundMutex);
-    // pause briefly for the noise to finish (reaction time)
-    Wait(40);
-    // back away
-    move_straight(-100, 100);
-    Wait(120);
-    // shake and squeal
-    shake(Random(3) + 1);
-    squeal();
-    // pet remains stunned briefly
-    Wait(300);
-    Release(soundMutex);
-    Release(moveMutex);
+    // immune to fright when exploring
+    if(EXPLORING == false){
+      // grab the sound and motor controls
+      Acquire(moveMutex); // grab motors
+      Acquire(soundMutex); // grab speaker
+      // pause briefly for the noise to finish (reaction time)
+      Wait(40);
+      // stop
+      stop_motors();
+      // back away
+      move_straight(-100, 100);
+      Wait(120);
+      // shake and squeal
+      shake(Random(3) + 1);
+      squeal();
+      // pet remains stunned briefly
+      Wait(300);
+      Release(soundMutex); // release speaker
+      Release(moveMutex); // release motors
+    }
   }
 }
 
@@ -38,16 +49,23 @@ task sing()
   // pet will hum to itself
   int duration;
   int count = 0;
+  int between_songs = 30000;
+  int between_songs_variance = 10000;
+  int between_notes_variance = 150;
+  int lowest_note = 0;
+  int heighest_note = 25;
+  int note_duration_variance = 200;
+  int min_note_variance = 80;
 
+  Wait(Random(between_songs_variance) + between_songs);
   while(true){
-    Acquire(soundMutex);
-    duration = Random(50) + 150;
-    // PlayTone(freqs[Random(25)], duration);
-    play_note(Random(25), duration);
-    Wait(Random(50));
-    Release(soundMutex);
-    if(count > 3 && Random(5) < 1){
-      Wait(Random(10000) + 4000);
+    Acquire(soundMutex); // grab speaker
+    duration = Random(note_duration_variance) + min_note_variance;
+    play_note(Random(heighest_note - lowest_note) + lowest_note, duration);
+    Wait(Random(between_notes_variance));
+    Release(soundMutex); // release speaker
+    if(count > 5 && Random(5) < 1){
+      Wait(Random(between_songs_variance) + between_songs);
       count = 0;
     } else{
       count++;
@@ -55,18 +73,69 @@ task sing()
   }
 }
 
+bool wander()
+{
+  // the actual exploration code
+  int max_random_turn = 120;
+
+  Acquire(moveMutex); // grab motors
+  stop_motors();
+  start_movement(Random(10) + 75);
+  Release(moveMutex); // release motors
+  
+  until(SensorUS(IN_4) < 20);
+  Acquire(moveMutex);
+  while(SensorUS(IN_4) < 30){
+    turn(Random(max_random_turn * 2) - max_random_turn);
+  }
+  Release(moveMutex);
+  // are we bored?
+  if(Random(10) > 1){
+    // no
+    return true;
+  } else{
+    return false;
+  }
+}
+
 task explore()
 {
   // pet will wander around avoiding obstacles
+  int explore_wait = 10000;
+  long time;
+  
+  while(true){
+    // wait for explore_wait or until touched
+    // time = CurrentTick() + explore_wait;
+    // until(CurrentTick() > time || TOUCH == 1);
+    until(TOUCH == 1);
+    EXPLORING = true;
+    while(wander()){}
+    EXPLORING = false;	
+  }
+}
+
+task test_sensors()
+{
+  while(true){
+    ClearScreen();
+    NumOut(5, LCD_LINE1, TOUCH);
+    NumOut(5, LCD_LINE2, MIC);
+    NumOut(5, LCD_LINE3, LAMP);
+    NumOut(5, LCD_LINE4, SensorUS(IN_4));
+    Wait(1000);
+  }
 }
 
 task main()
 {
   // assign the sensors
-  SetSensorSound(IN_2);
+  SetSensorTouch(IN_1); // TOUCH = (0, 1)
+  SetSensorSound(IN_2); // MIC = (0, 100)
+  SetSensorType(IN_3, SENSOR_TYPE_LIGHT_ACTIVE); //
+  SetSensorLowspeed(IN_4); // SensorUS(IN_4) = (0, 255)
   // setup the sounds
   setFreqs();
   // start the tasks
-  Precedes(startled, sing);
+  Precedes(explore, startle, sing);
 }
-
