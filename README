@@ -1,6 +1,12 @@
-PET
+= PET =
 
 A pet for our house!
 
+== Sounds ==
+
+Includes a sounds file with some useful functionality. Not least, play_sounds(int notes[], int duration) that emulates polyphony by rapidly changing the pitch 
+between a provided array of notes. (8-bit style)
+
+Include
 
 For use with Lego Mindstorms NXT 2.0
