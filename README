@@ -2,11 +2,18 @@
 
 A pet for our house!
 
+== Behaviour ==
+
+Currently, Pet will explore the room when you press the touch sensor (avoiding obstacles) and sing to itself every now and then. While idle, Pet will be startled 
+by loud noises.
+
 == Sounds ==
 
 Includes a sounds file with some useful functionality. Not least, play_sounds(int notes[], int duration) that emulates polyphony by rapidly changing the pitch 
 between a provided array of notes. (8-bit style)
 
-Include
+== Requirements ==
 
-For use with Lego Mindstorms NXT 2.0
+For use with Lego Mindstorms NXT 2.0.
+
+You'll need to bulid a suitable robot. I'll add details at some point.
